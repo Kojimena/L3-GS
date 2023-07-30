@@ -1,142 +1,87 @@
-// Jimena Hernández 21199
-#include <SDL2/SDL.h>
+#include <iostream>
 #include <glm/glm.hpp>
+#include <SDL.h>
+#include <ctime>
+#include "gl.h"
+#include "load.h"
 
-const int FRAMEBUFFER_WIDTH = 80;
-const int FRAMEBUFFER_HEIGHT = 80;
-const int FRAMEBUFFER_SIZE = FRAMEBUFFER_WIDTH * FRAMEBUFFER_HEIGHT;
+// Suponemos que esta es la firma de tu función drawTriangle
+void drawTriangle(const glm::vec3& v1, const glm::vec3& v2, const glm::vec3& v3) {
+    // Transform model coordinates to screen coordinates
+    int x1 = (v1.x + 1) * SCREEN_WIDTH / 2;
+    int y1 = (v1.y + 1) * SCREEN_HEIGHT / 2;
+    int x2 = (v2.x + 1) * SCREEN_WIDTH / 2;
+    int y2 = (v2.y + 1) * SCREEN_HEIGHT / 2;
+    int x3 = (v3.x + 1) * SCREEN_WIDTH / 2;
+    int y3 = (v3.y + 1) * SCREEN_HEIGHT / 2;
 
-struct Color {
-    uint8_t r;
-    uint8_t g;
-    uint8_t b;
-    uint8_t a;
-};
+    SDL_SetRenderDrawColor(renderer, currentColor.r, currentColor.g, currentColor.b, currentColor.a);
 
-Color currentFramebuffer[FRAMEBUFFER_SIZE];
-Color nextFramebuffer[FRAMEBUFFER_SIZE];
-Color currentColor; // Moved this line after the Color struct
+    // Draw the first side of the triangle
+    SDL_RenderDrawLine(renderer, x1, y1, x2, y2);
+    // Draw the second side of the triangle
+    SDL_RenderDrawLine(renderer, x2, y2, x3, y3);
+    // Draw the third side of the triangle
+    SDL_RenderDrawLine(renderer, x3, y3, x1, y1);
+}
 
-bool shouldLive(int x, int y) {
-    int liveNeighbors = 0;
-    for (int dx = -1; dx <= 1; dx++) {
-        for (int dy = -1; dy <= 1; dy++) {
-            if (dx != 0 || dy != 0) {
-                int nx = (x + dx + FRAMEBUFFER_WIDTH) % FRAMEBUFFER_WIDTH;
-                int ny = (y + dy + FRAMEBUFFER_HEIGHT) % FRAMEBUFFER_HEIGHT;
-                if (currentFramebuffer[ny * FRAMEBUFFER_WIDTH + nx].r > 0) {
-                    liveNeighbors++;
-                }
-            }
+
+std::vector<glm::vec3> modelVertices;
+
+void render() {
+    for (size_t i = 0; i < modelVertices.size(); i += 3) {
+        drawTriangle(modelVertices[i], modelVertices[i+1], modelVertices[i+2]);
+    }
+}
+
+std::vector<glm::vec3> setupVertexArray(const std::vector<glm::vec3>& vertices, const std::vector<Face>& faces)
+{
+    std::vector<glm::vec3> vertexArray;
+
+    // For each face
+    for (const auto& face : faces)
+    {
+        // For each vertex index in the face
+        for (const auto& vertexIndex : face.vertexIndices)
+        {
+            // Get the vertex position from the input arrays using the index from the face
+            glm::vec3 vertexPosition = vertices[vertexIndex];
+
+            // Add the vertex position to the vertex array
+            vertexArray.push_back(vertexPosition);
         }
     }
 
-    if (currentFramebuffer[y * FRAMEBUFFER_WIDTH + x].r > 0) {
-        return liveNeighbors >= 2 && liveNeighbors <= 3;
-    } else {
-        return liveNeighbors == 3;
-    }
-}
-
-// Agregar esta función al código
-void point(int x, int y) {
-    if (x >= 0 && x < FRAMEBUFFER_WIDTH && y >= 0 && y < FRAMEBUFFER_HEIGHT) {
-        currentFramebuffer[y * FRAMEBUFFER_WIDTH + x] = currentColor;
-    }
-}
-
-void pulsar(int top_left_x, int top_left_y) {
-    currentColor = {0, 255, 255, 255}; // Celeste
-
-    int offsets[48][2] = {
-            {2, 0}, {3, 0}, {4, 0}, {8, 0}, {9, 0}, {10, 0},
-            {0, 2}, {5, 2}, {7, 2}, {12, 2},
-            {0, 3}, {5, 3}, {7, 3}, {12, 3},
-            {0, 4}, {5, 4}, {7, 4}, {12, 4},
-            {2, 5}, {3, 5}, {4, 5}, {8, 5}, {9, 5}, {10, 5},
-            {2, 7}, {3, 7}, {4, 7}, {8, 7}, {9, 7}, {10, 7},
-            {0, 8}, {5, 8}, {7, 8}, {12, 8},
-            {0, 9}, {5, 9}, {7, 9}, {12, 9},
-            {0, 10}, {5, 10}, {7, 10}, {12, 10},
-            {2, 12}, {3, 12}, {4, 12}, {8, 12}, {9, 12}, {10, 12}
-    };
-
-    for (auto& offset : offsets) {
-        point(top_left_x + offset[0], top_left_y + offset[1]);
-    }
-}
-
-void renderBuffer(SDL_Renderer* renderer) {
-    SDL_Texture* texture = SDL_CreateTexture(
-            renderer,
-            SDL_PIXELFORMAT_ABGR8888,
-            SDL_TEXTUREACCESS_STREAMING,
-            FRAMEBUFFER_WIDTH,
-            FRAMEBUFFER_HEIGHT
-    );
-
-    SDL_UpdateTexture(
-            texture,
-            NULL,
-            currentFramebuffer,
-            FRAMEBUFFER_WIDTH * sizeof(Color)
-    );
-
-    SDL_RenderCopy(renderer, texture, NULL, NULL);
-    SDL_DestroyTexture(texture);
-}
-
-void render(SDL_Renderer* renderer) {
-    for (int x = 0; x < FRAMEBUFFER_WIDTH; x++) {
-        for (int y = 0; y < FRAMEBUFFER_HEIGHT; y++) {
-            if (shouldLive(x, y)) {
-                nextFramebuffer[y * FRAMEBUFFER_WIDTH + x] = {204, 255, 229, 255};
-            } else {
-                nextFramebuffer[y * FRAMEBUFFER_WIDTH + x] = {0, 0, 0, 255};
-            }
-        }
-    }
-
-    for (int i = 0; i < FRAMEBUFFER_SIZE; i++) {
-        currentFramebuffer[i] = nextFramebuffer[i];
-    }
-
-    renderBuffer(renderer);
+    return vertexArray;
 }
 
 
-int main() {
-    SDL_Init(SDL_INIT_EVERYTHING);
 
-    SDL_Window* window = SDL_CreateWindow("life", 0, 0, FRAMEBUFFER_WIDTH * 10, FRAMEBUFFER_HEIGHT * 10, 0);
-    SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+int main(int argc, char** argv) {
+    init();
 
-    // Población inicial aleatoria
-    for (int i = 0; i < FRAMEBUFFER_SIZE; i++) {
-        if (rand() % 2 == 0) {
-            currentFramebuffer[i] = {255, 255, 255, 255};
-        } else {
-            currentFramebuffer[i] = {0, 0, 0, 255};
-        }
+    std::vector<glm::vec3> vertices;
+    std::vector<Face> faces;
+    if (!loadOBJ("/Users/jime/Downloads/cubee.obj", vertices, faces)) {
+        std::cerr << "Failed to load model" << std::endl;
+        return 1;
     }
+
+    modelVertices = setupVertexArray(vertices, faces);
 
     bool running = true;
-    SDL_Event event;
-
-    currentColor = {255, 255, 255, 255};
-    pulsar(20, 20);
-    pulsar(40, 40);
-    pulsar(60, 60);
     while (running) {
+        SDL_Event event;
         while (SDL_PollEvent(&event)) {
             if (event.type == SDL_QUIT) {
                 running = false;
             }
         }
 
-        render(renderer);
+        clear();
+        render();
+
         SDL_RenderPresent(renderer);
-        SDL_Delay(1000 / 60);
     }
 
     SDL_DestroyRenderer(renderer);
@@ -146,3 +91,5 @@ int main() {
 
     return 0;
 }
+
+
