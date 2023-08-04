@@ -18,7 +18,7 @@ void drawTriangle(const glm::vec3& v1, const glm::vec3& v2, const glm::vec3& v3)
     glm::vec4 v2_rotated = rotation * glm::vec4(v2, 1.0f);
     glm::vec4 v3_rotated = rotation * glm::vec4(v3, 1.0f);
 
-    float scale = 0.09; // Adjust this value as needed
+    float scale = 0.1; // Adjust this value as needed
     glm::vec3 translation(0, 0, 0); // Adjust these values as needed
     glm::vec3 v1_transformed = glm::vec3(v1_rotated) * scale + translation;
     glm::vec3 v2_transformed = glm::vec3(v2_rotated) * scale + translation;
