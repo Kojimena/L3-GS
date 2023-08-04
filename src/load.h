@@ -7,7 +7,6 @@ struct Face {
     std::vector<int> vertexIndices;
 };
 
-
 bool loadOBJ(const std::string& path, std::vector<glm::vec3>& out_vertices, std::vector<Face>& out_faces) {
     std::ifstream file(path);
     if (!file.is_open()) {
@@ -27,11 +26,12 @@ bool loadOBJ(const std::string& path, std::vector<glm::vec3>& out_vertices, std:
         }
         else if (type == "f") {
             Face face;
-            for (int i = 0; i < 3; ++i) {
+            std::string vertexIndexStr;
+            while (iss >> vertexIndexStr) {
+                std::istringstream vertexIndexStream(vertexIndexStr);
                 int vertexIndex;
-                iss >> vertexIndex;
-                // Correct for obj format which starts at 1 not 0
-                --vertexIndex;
+                vertexIndexStream >> vertexIndex;
+                --vertexIndex; // Correct for obj format which starts at 1 not 0
                 face.vertexIndices.push_back(vertexIndex);
             }
             out_faces.push_back(face);
@@ -40,5 +40,6 @@ bool loadOBJ(const std::string& path, std::vector<glm::vec3>& out_vertices, std:
 
     return true;
 }
+
 
 

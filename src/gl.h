@@ -11,7 +11,7 @@ struct Color {
 SDL_Window* window = nullptr;
 SDL_Renderer* renderer = nullptr;
 const int SCREEN_WIDTH = 640;
-const int SCREEN_HEIGHT = 480;
+const int SCREEN_HEIGHT = 680;
 
 Color currentColor = {255, 255, 255, 255}; // Initially set to white
 Color clearColor = {0, 0, 0, 255}; // Initially set to black
@@ -26,7 +26,6 @@ void init() {
 void setColor(const Color& color) {
     currentColor = color;
 }
-
 
 // Function to clear the framebuffer with the clearColor
 void clear() {
