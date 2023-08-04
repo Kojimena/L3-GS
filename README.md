@@ -1,6 +1,6 @@
 # SR 1: Carga de modelos
 
-![GIF](https://www.kapwing.com/videos/64cc6dc40f5cd30451416045)
+![GIF](https://imgur.com/ntOLKRd)
 
 
 Este proyecto es una aplicación simple que utiliza la biblioteca SDL para renderizar un modelo 3D en una ventana. El modelo 3D es cargado desde un archivo .obj y se muestra rotando en círculos alrededor del centro de la pantalla.
