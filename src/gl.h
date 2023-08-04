@@ -10,7 +10,7 @@ struct Color {
 
 SDL_Window* window = nullptr;
 SDL_Renderer* renderer = nullptr;
-const int SCREEN_WIDTH = 640;
+const int SCREEN_WIDTH = 840;
 const int SCREEN_HEIGHT = 680;
 
 Color currentColor = {255, 255, 255, 255}; // Initially set to white

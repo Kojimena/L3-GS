@@ -2,16 +2,27 @@
 #include <glm/glm.hpp>
 #include <SDL.h>
 #include <ctime>
+#include <glm/ext/matrix_transform.hpp>
 #include "gl.h"
 #include "load.h"
 
+float rotationAngle = 0.0f;
+
+
 void drawTriangle(const glm::vec3& v1, const glm::vec3& v2, const glm::vec3& v3) {
-    // Scale and translate the model coordinates
+    // Crea una matriz de rotación
+    glm::mat4 rotation = glm::rotate(glm::mat4(0.9f), rotationAngle, glm::vec3(1.0f, 0.0f, 0.0f));
+
+    // Aplica la rotación a los vértices
+    glm::vec4 v1_rotated = rotation * glm::vec4(v1, 1.0f);
+    glm::vec4 v2_rotated = rotation * glm::vec4(v2, 1.0f);
+    glm::vec4 v3_rotated = rotation * glm::vec4(v3, 1.0f);
+
     float scale = 0.09; // Adjust this value as needed
     glm::vec3 translation(0, 0, 0); // Adjust these values as needed
-    glm::vec3 v1_transformed = v1 * scale + translation;
-    glm::vec3 v2_transformed = v2 * scale + translation;
-    glm::vec3 v3_transformed = v3 * scale + translation;
+    glm::vec3 v1_transformed = glm::vec3(v1_rotated) * scale + translation;
+    glm::vec3 v2_transformed = glm::vec3(v2_rotated) * scale + translation;
+    glm::vec3 v3_transformed = glm::vec3(v3_rotated) * scale + translation;
 
     // Transform model coordinates to screen coordinates
     int x1 = (v1_transformed.x + 1) * SCREEN_WIDTH / 2;
@@ -30,6 +41,7 @@ void drawTriangle(const glm::vec3& v1, const glm::vec3& v2, const glm::vec3& v3)
     // Draw the third side of the triangle
     SDL_RenderDrawLine(renderer, x3, y3, x1, y1);
 }
+
 
 std::vector<glm::vec3> modelVertices;
 
@@ -104,6 +116,8 @@ int main(int argc, char** argv) {
 
         // Clear the screen in each iteration
         clear();
+
+        rotationAngle += 0.01f; // Incrementa el ángulo de rotación
 
         render();
 
